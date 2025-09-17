@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <h2 class="mb-4">Email Campaign Management</h2>
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Create New Campaign</h5>
+                <form method="POST">
+                    <input type="hidden" name="action" value="create">
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Campaign Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="emails" class="form-label">Recipient Emails (comma-separated)</label>
+                        <textarea class="form-control" id="emails" name="emails" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email_type" class="form-label">Email Type</label>
+                            <select class="form-select" id="email_type" name="email_type">
+                                <option value="promotion">Promotion</option>
+                                <option value="newsletter">Newsletter</option>
+                                <option value="cold_outreach">Cold Outreach</option>
+                                <option value="follow_up">Follow-up</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="topic" class="form-label">Topic/Subject</label>
+                            <input type="text" class="form-control" id="topic" name="topic" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Create Campaign</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Existing Campaigns</h5>
+                
+                {% if campaigns %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Recipients</th>
+                                <th>Sent</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for id, campaign in campaigns.items() %}
+                            <tr>
+                                <td>{{ campaign.name }}</td>
+                                <td>
+                                    <span class="badge {% if campaign.status == 'completed' %}bg-success{% elif campaign.status == 'running' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                        {{ campaign.status|title }}
+                                    </span>
+                                </td>
+                                <td>{{ campaign.target_emails|length }}</td>
+                                <td>{{ campaign.sent_count }}</td>
+                                <td>{{ campaign.created_at }}</td>
+                                <td>
+                                    {% if campaign.status == 'created' %}
+                                    <form method="POST" class="d-inline">
+                                        <input type="hidden" name="action" value="send">
+                                        <input type="hidden" name="campaign_id" value="{{ id }}">
+                                        <button type="submit" class="btn btn-sm btn-success">Send</button>
+                                    </form>
+                                    {% endif %}
+                                    <button class="btn btn-sm btn-info">View</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No campaigns yet. Create your first campaign above.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

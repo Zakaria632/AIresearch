@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <h2 class="mb-4">Email Validation</h2>
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="emails" class="form-label">Enter emails (comma-separated)</label>
+                        <textarea class="form-control" id="emails" name="emails" rows="5" placeholder="email1@example.com, email2@example.com">{{ request.form.emails if request.form.emails }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Or upload a file (CSV or Excel)</label>
+                        <input class="form-control" type="file" id="file" name="file" accept=".csv,.xlsx">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Validate Emails</button>
+                </form>
+            </div>
+        </div>
+        
+        {% if results %}
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Validation Results</h5>
+                <div class="mb-3">
+                    <span class="badge bg-success">Valid: {{ valid_count }}</span>
+                    <span class="badge bg-danger ms-2">Invalid: {{ invalid_count }}</span>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Valid Syntax</th>
+                                <th>MX Records</th>
+                                <th>Disposable</th>
+                                <th>Score</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for email, result in results.items() %}
+                            <tr>
+                                <td>{{ email }}</td>
+                                <td>{{ '✓' if result.is_valid_syntax else '✗' }}</td>
+                                <td>{{ '✓' if result.has_mx_records else '✗' }}</td>
+                                <td>{{ '✓' if result.is_disposable else '✗' }}</td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar {% if result.score > 0.6 %}bg-success{% elif result.score > 0.3 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                             role="progressbar" style="width: {{ result.score * 100 }}%;" 
+                                             aria-valuenow="{{ result.score * 100 }}" aria-valuemin="0" aria-valuemax="100">
+                                            {{ (result.score * 100)|round(1) }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if result.score > 0.6 %}
+                                    <span class="badge bg-success">Valid</span>
+                                    {% elif result.score > 0.3 %}
+                                    <span class="badge bg-warning">Questionable</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Invalid</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
